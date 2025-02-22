@@ -74,6 +74,21 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
+u_int16_t fetch(struct Emu *emu) {
+  u_int8_t higher_byte = emu->ram[emu->program_counter];
+  u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
+  // construct 16-bit value from two 8-bit values
+  emu->program_counter += 2;
+  return (higher_byte << 8) | lower_byte;
+}
+
+int execute() { return 0; }
+
+void tick(struct Emu *emu) {
+  u_int8_t opcode = fetch(&emu);
+  execute(opcode);
+}
+
 int push(struct Emu *emu, u_int16_t val) {
   emu->stack[emu->stack_pointer] = val;
   emu->stack_pointer++;
