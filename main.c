@@ -74,7 +74,7 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
-inline u_int16_t fetch(struct Emu *emu) {
+static inline u_int16_t fetch(struct Emu *emu) {
   u_int8_t higher_byte = emu->ram[emu->program_counter];
   u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
   emu->program_counter += 2;
@@ -82,10 +82,10 @@ inline u_int16_t fetch(struct Emu *emu) {
   return (higher_byte << 8) | lower_byte;
 }
 
-int execute() { return 0; }
+int execute(u_int16_t opcode) { return 0; }
 
 void tick(struct Emu *emu) {
-  u_int8_t opcode = fetch(&emu);
+  u_int16_t opcode = fetch(emu);
   execute(opcode);
 }
 
