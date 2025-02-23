@@ -74,11 +74,11 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
-u_int16_t fetch(struct Emu *emu) {
+inline u_int16_t fetch(struct Emu *emu) {
   u_int8_t higher_byte = emu->ram[emu->program_counter];
   u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
-  // construct 16-bit value from two 8-bit values
   emu->program_counter += 2;
+  // construct 16-bit value from two 8-bit values
   return (higher_byte << 8) | lower_byte;
 }
 
