@@ -74,18 +74,22 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
-static inline u_int16_t fetch(struct Emu *emu) {
-  u_int8_t higher_byte = emu->ram[emu->program_counter];
-  u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
-  emu->program_counter += 2;
-  // construct 16-bit value from two 8-bit values
-  return (higher_byte << 8) | lower_byte;
-}
+// static inline u_int16_t fetch(struct Emu *emu) {
+//   u_int8_t higher_byte = emu->ram[emu->program_counter];
+//   u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
+//   emu->program_counter += 2;
+//   // construct 16-bit value from two 8-bit values
+//   return (higher_byte << 8) | lower_byte;
+// }
 
 int execute(u_int16_t opcode) { return 0; }
 
 void tick(struct Emu *emu) {
-  u_int16_t opcode = fetch(emu);
+  // inline of "fetch" function
+  u_int8_t higher_byte = emu->ram[emu->program_counter];
+  u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
+  u_int16_t opcode = (higher_byte << 8) | lower_byte;
+  emu->program_counter += 2;
   execute(opcode);
 }
 
