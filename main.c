@@ -76,14 +76,6 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
-// static inline u_int16_t fetch(struct Emu *emu) {
-//   u_int8_t higher_byte = emu->ram[emu->program_counter];
-//   u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
-//   emu->program_counter += 2;
-//   // construct 16-bit value from two 8-bit values
-//   return (higher_byte << 8) | lower_byte;
-// }
-
 int execute(struct Emu *emu) {
   switch (emu->opcode) {
   case 0x0000: // Nop
@@ -92,6 +84,9 @@ int execute(struct Emu *emu) {
     for (int i = 0; i < SCREEN_SIZE; i++) {
       emu->screen[i] = false;
     }
+  case 0x00EE: // Return from Subroutine
+    u_int16_t return_addr = pop(&emu);
+    emu->stack_pointer = return_addr;
   }
   return 0;
 }
