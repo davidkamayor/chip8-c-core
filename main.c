@@ -4,7 +4,7 @@
 #define RAM_SIZE 4096
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
-#define SCREEN SCREEN_WIDTH *SCREEN_HEIGHT
+#define SCREEN_SIZE SCREEN_WIDTH *SCREEN_HEIGHT
 #define STACK_SIZE 16
 #define NUM_KEYS 16
 #define FONTSET_SIZE 80
@@ -12,13 +12,14 @@
 struct Emu {
   u_int16_t program_counter;
   u_int8_t ram[RAM_SIZE];
-  bool screen[SCREEN];
+  bool screen[SCREEN_SIZE];
   u_int8_t v_regs[16];
   u_int16_t i_reg;
   u_int16_t stack_pointer;
   u_int16_t stack[STACK_SIZE];
   u_int8_t delay_timer;
   u_int8_t sound_timer;
+  u_int16_t opcode;
 };
 
 void initialize_emu(struct Emu *emu) {
@@ -28,6 +29,7 @@ void initialize_emu(struct Emu *emu) {
   emu->stack_pointer = 0;
   emu->delay_timer = 0;
   emu->sound_timer = 0;
+  emu->opcode = 0000;
 
   u_int8_t FONTSET[80] = {
       0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -59,7 +61,7 @@ void initialize_emu(struct Emu *emu) {
   }
 
   // Initialize the screen (set all pixels to false, meaning off)
-  for (int i = 0; i < SCREEN; i++) {
+  for (int i = 0; i < SCREEN_SIZE; i++) {
     emu->screen[i] = false;
   }
 
@@ -82,7 +84,17 @@ void initialize_emu(struct Emu *emu) {
 //   return (higher_byte << 8) | lower_byte;
 // }
 
-int execute(u_int16_t opcode) { return 0; }
+int execute(struct Emu *emu) {
+  switch (emu->opcode) {
+  case 0x0000: // Nop
+    return 0;
+  case 0x00E0: // Clear Screen
+    for (int i = 0; i < SCREEN_SIZE; i++) {
+      emu->screen[i] = false;
+    }
+  }
+  return 0;
+}
 
 void tick(struct Emu *emu) {
   // inline of "fetch" function
