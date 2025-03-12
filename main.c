@@ -77,18 +77,21 @@ void initialize_emu(struct Emu *emu) {
 }
 
 int execute(struct Emu *emu) {
-  switch (emu->opcode) {
-  case 0x0000: // Nop
-    return 0;
-  case 0x00E0: // Clear Screen
-    for (int i = 0; i < SCREEN_SIZE; i++) {
-      emu->screen[i] = false;
+  // inspect first nibble
+  switch (emu->opcode & 0xF000) {
+  case 0x0000:
+    switch (emu->opcode) {
+    case 0x00E0: // Clear Screen
+      for (int i = 0; i < SCREEN_SIZE; i++) {
+        emu->screen[i] = false;
+      }
+    case 0x00EE: // Return from Subroutine
+      u_int16_t return_addr = pop(&emu);
+      emu->stack_pointer = return_addr;
     }
-  case 0x00EE: // Return from Subroutine
-    u_int16_t return_addr = pop(&emu);
-    emu->stack_pointer = return_addr;
+
+  case 0x1000: // Jump
   }
-  return 0;
 }
 
 void tick(struct Emu *emu) {
