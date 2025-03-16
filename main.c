@@ -76,44 +76,6 @@ void initialize_emu(struct Emu *emu) {
   }
 }
 
-int execute(struct Emu *emu) {
-  // inspect first nibble
-  switch (emu->opcode & 0xF000) {
-  case 0x0000:
-    switch (emu->opcode) {
-    case 0x00E0: // Clear Screen
-      for (int i = 0; i < SCREEN_SIZE; i++) {
-        emu->screen[i] = false;
-      }
-    case 0x00EE: // Return from Subroutine
-      u_int16_t return_addr = pop(&emu);
-      emu->stack_pointer = return_addr;
-    }
-  case 0x1000: // Jump
-    u_int16_t nnn = emu->opcode & 0xFFF;
-    emu->program_counter = nnn;
-  case 0x2000: // Call subroutine
-    u_int16_t nnn = emu->opcode & 0xFFF;
-    push(&emu, emu->program_counter);
-    emu->program_counter = nnn;
-  case 0x3000: // Skip Next if VX=NN
-    u_int8_t nn = emu->opcode & 0xFF;
-    u_int8_t digit2 = (emu->opcode & 0x0F00) >> 8;
-    if (emu->v_regs[digit2] == nn) {
-      emu->program_counter += 2;
-    }
-  }
-}
-
-void tick(struct Emu *emu) {
-  // inline of "fetch" function
-  u_int8_t higher_byte = emu->ram[emu->program_counter];
-  u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
-  u_int16_t opcode = (higher_byte << 8) | lower_byte;
-  emu->program_counter += 2;
-  execute(opcode);
-}
-
 int push(struct Emu *emu, u_int16_t val) {
   emu->stack[emu->stack_pointer] = val;
   emu->stack_pointer++;
@@ -123,6 +85,50 @@ int push(struct Emu *emu, u_int16_t val) {
 int pop(struct Emu *emu) {
   emu->stack_pointer--;
   return emu->stack[emu->stack_pointer];
+}
+
+void execute(struct Emu *emu) {
+  switch (emu->opcode & 0xF000) { // inspect first nibble
+  case 0x0000:
+    switch (emu->opcode) {
+    case 0x00E0: { // Clear Screen
+      for (int i = 0; i < SCREEN_SIZE; i++) {
+        emu->screen[i] = false;
+      }
+    }
+    case 0x00EE: { // Return from Subroutine
+      u_int16_t return_addr = pop(emu);
+      emu->stack_pointer = return_addr;
+    }
+    default: // 0x0000 no op
+      break;
+    }
+  case 0x1000: { // Jump
+    u_int16_t nnn = emu->opcode & 0xFFF;
+    emu->program_counter = nnn;
+  }
+  case 0x2000: { // Call subroutine
+    u_int16_t nnn = emu->opcode & 0xFFF;
+    push(emu, emu->program_counter);
+    emu->program_counter = nnn;
+  }
+  case 0x3000: { // Skip Next if VX=NN
+    u_int8_t nn = emu->opcode & 0xFF;
+    u_int8_t digit2 = (emu->opcode & 0x0F00) >> 8;
+    if (emu->v_regs[digit2] == nn) {
+      emu->program_counter += 2;
+    }
+  }
+  }
+}
+
+void tick(struct Emu *emu) {
+  // inline of "fetch" function
+  u_int8_t higher_byte = emu->ram[emu->program_counter];
+  u_int8_t lower_byte = emu->ram[emu->program_counter + 1];
+  emu->opcode = (higher_byte << 8) | lower_byte;
+  emu->program_counter += 2;
+  execute(emu);
 }
 
 int mem_dump(struct Emu *emu) {
